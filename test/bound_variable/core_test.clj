@@ -51,7 +51,7 @@
 (simple-report (test-get-register))
 
 (defcontext setup-registers []
-  (dosync (ref-set *registers* [1 2 3 0 0 4294967296 0 0]))
+  (dosync (ref-set *registers* [1 2 3 0 0 4294967296 4294967276 0]))
   :after [_]
   (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
 
@@ -99,3 +99,23 @@
   test-exec-operator-3-3)
 
 (simple-report (test-exec-operator-3))
+
+  ;(dosync (ref-set *registers* [1 2 3 0 0 4294967296 4294967276 0]))
+(deftest test-exec-operator-4-0 [_ setup-registers]
+  "6 = 3 * 2 (A = B * C)"
+  (= 6 (exec-and-fetch-register 0x400001d1 7))) ; % 0000 0001 1101 0001
+
+(deftest test-exec-operator-4-1 [_ setup-registers]
+  "9 = 3 * 3 (A = B * C)"
+  (= 9 (exec-and-fetch-register 0x40000092 2))) ; % 0000 0000 1001 0010
+
+(deftest test-exec-operator-4-2 [_ setup-registers]
+  "4294967256 = 4294967276 * 2 (A = B + C)"
+  (= 4294967256 (exec-and-fetch-register 0x400000f1 3))) ; % 0000 0000 1111 0001
+
+(defsuite test-exec-operator-4 []
+  test-exec-operator-4-0
+  test-exec-operator-4-1
+  test-exec-operator-4-2)
+
+(simple-report (test-exec-operator-4))

@@ -43,3 +43,11 @@
         rcv (get-register-value :c instruction)
         sum (rem (+ rbv rcv) *integer-modulus*)]
     (dosync (alter *registers* assoc ra sum))))
+
+; Operator 4: A = (B * C) % 2^32
+(defmethod execute-instruction 0x4 [instruction]
+  (let [ra (get-register :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)
+        product (rem (* rbv rcv) *integer-modulus*)]
+    (dosync (alter *registers* assoc ra product))))

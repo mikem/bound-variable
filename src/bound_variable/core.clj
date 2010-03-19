@@ -36,18 +36,17 @@
     (when-not (zero? rcv)
       (dosync (alter *registers* assoc ra rbv)))))
 
-; Operator 3: A = (B + C) % 2^32
-(defmethod execute-instruction 0x3 [instruction]
+(defn execute-arithmetic-instruction [instruction op]
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
-        sum (rem (+ rbv rcv) *integer-modulus*)]
+        sum (rem (op rbv rcv) *integer-modulus*)]
     (dosync (alter *registers* assoc ra sum))))
+
+; Operator 3: A = (B + C) % 2^32
+(defmethod execute-instruction 0x3 [instruction]
+  (execute-arithmetic-instruction instruction +))
 
 ; Operator 4: A = (B * C) % 2^32
 (defmethod execute-instruction 0x4 [instruction]
-  (let [ra (get-register :a instruction)
-        rbv (get-register-value :b instruction)
-        rcv (get-register-value :c instruction)
-        product (rem (* rbv rcv) *integer-modulus*)]
-    (dosync (alter *registers* assoc ra product))))
+  (execute-arithmetic-instruction instruction *))

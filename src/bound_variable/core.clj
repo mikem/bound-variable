@@ -4,6 +4,7 @@
 (def *word-size* 32)
 (def *opcode-size* 4)
 (def *get-opcode-shift-amount* (- *word-size* *opcode-size*))
+(def *integer-modulus* (Math/pow 2 32))
 
 ;;; registers
 (def *bits-per-register* 3)
@@ -27,10 +28,18 @@
 
 (defmulti execute-instruction get-opcode)
 
-; Move contents of B to A if contents of C is non-zero
+; Operator 0: move contents of B to A if contents of C is non-zero
 (defmethod execute-instruction 0x0 [instruction]
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
     (when-not (zero? rcv)
       (dosync (alter *registers* assoc ra rbv)))))
+
+; Operator 3: A = (B + C) % 2^32
+(defmethod execute-instruction 0x3 [instruction]
+  (let [ra (get-register :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)
+        sum (rem (+ rbv rcv) *integer-modulus*)]
+    (dosync (alter *registers* assoc ra sum))))

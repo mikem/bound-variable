@@ -51,7 +51,7 @@
 (simple-report (test-get-register))
 
 (defcontext setup-registers []
-  (dosync (ref-set *registers* [1 2 3 0 0 4294967296 4294967276 0]))
+  (dosync (ref-set *registers* [1 2 3 0 4 4294967296 4294967276 0]))
   :after [_]
   (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
 
@@ -68,7 +68,7 @@
 
 (deftest test-exec-operator-0-1 [_ setup-registers]
   "Do nothing because contents of C is zero"
-  (= 0x0 (exec-and-fetch-register 0x000001d4 7))) ; % 0000 0001 1101 0011
+  (= 0x0 (exec-and-fetch-register 0x000001d3 7))) ; % 0000 0001 1101 0011
 
 (defsuite test-exec-operator-0 []
   test-exec-operator-0-0
@@ -100,7 +100,6 @@
 
 (simple-report (test-exec-operator-3))
 
-  ;(dosync (ref-set *registers* [1 2 3 0 0 4294967296 4294967276 0]))
 (deftest test-exec-operator-4-0 [_ setup-registers]
   "6 = 3 * 2 (A = B * C)"
   (= 6 (exec-and-fetch-register 0x400001d1 7))) ; % 0000 0001 1101 0001
@@ -119,3 +118,17 @@
   test-exec-operator-4-2)
 
 (simple-report (test-exec-operator-4))
+
+(deftest test-exec-operator-5-0 [_ setup-registers]
+  "2 = 4 / 2 (A = B / C)"
+  (= 2 (exec-and-fetch-register 0x500001e1 7))) ; % 0000 0001 1110 0001
+
+(deftest test-exec-operator-5-1 [_ setup-registers]
+  "1 = 4 / 3 (A = B / C)"
+  (= 1 (exec-and-fetch-register 0x500001e2 7))) ; % 0000 0001 1110 0010
+
+(defsuite test-exec-operator-5 []
+  test-exec-operator-5-0
+  test-exec-operator-5-1)
+
+(simple-report (test-exec-operator-5))

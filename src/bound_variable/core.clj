@@ -40,8 +40,8 @@
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
-        sum (rem (op rbv rcv) *integer-modulus*)]
-    (dosync (alter *registers* assoc ra sum))))
+        result (rem (op rbv rcv) *integer-modulus*)]
+    (dosync (alter *registers* assoc ra result))))
 
 ; Operator 3: A = (B + C) % 2^32
 (defmethod execute-instruction 0x3 [instruction]
@@ -50,3 +50,13 @@
 ; Operator 4: A = (B * C) % 2^32
 (defmethod execute-instruction 0x4 [instruction]
   (execute-arithmetic-instruction instruction *))
+
+; Operator 5: A = (B / C)
+; What should happen if C is zero? Currently, just throw a divide-by-zero
+; ArithmeticException
+(defmethod execute-instruction 0x5 [instruction]
+  (let [ra (get-register :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)
+        dividend (int (/ rbv rcv))]
+    (dosync (alter *registers* assoc ra dividend))))

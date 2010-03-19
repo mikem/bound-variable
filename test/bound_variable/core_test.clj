@@ -132,3 +132,17 @@
   test-exec-operator-5-1)
 
 (simple-report (test-exec-operator-5))
+
+(deftest test-exec-operator-13-0 [_ setup-registers]
+  "A <- 6"
+  (= 6 (exec-and-fetch-register 0xde000006 7))) ; % 1101 1110 ...
+
+(deftest test-exec-operator-13-1 [_ setup-registers]
+  "A <- 33554431"
+  (= 33554431 (exec-and-fetch-register 0xdfffffff 7))) ; % 1101 1111 ...
+
+(defsuite test-exec-operator-13 []
+  test-exec-operator-13-0
+  test-exec-operator-13-1)
+
+(simple-report (test-exec-operator-13))

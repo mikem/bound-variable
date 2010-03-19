@@ -12,6 +12,8 @@
                          :b (* *bits-per-register* 1)
                          :c (* *bits-per-register* 0)})
 (def *register-mask* 0x7) ; binary 0000 0000 0000 0111
+(def *load-register-offset* (- *word-size* *opcode-size* *bits-per-register*))
+(def *load-value-mask* 0x01ffffff) ; 0000 0001 1111 1111 1111 1111 1111 1111
 ;;; eight registers, initialized to 0
 (def *registers* (ref [0 0 0 0 0 0 0 0]))
 
@@ -60,3 +62,11 @@
         rcv (get-register-value :c instruction)
         dividend (int (/ rbv rcv))]
     (dosync (alter *registers* assoc ra dividend))))
+
+; Operator 13: A <- value
+(defmethod execute-instruction 0xd [instruction]
+  (let [ra (bit-and
+             (bit-shift-right instruction *load-register-offset*)
+             *register-mask*)
+        value (bit-and instruction *load-value-mask*)]
+    (dosync (alter *registers* assoc ra value))))

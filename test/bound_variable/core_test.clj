@@ -162,6 +162,20 @@
 
 (simple-report (test-exec-operator-8))
 
+(deftest test-exec-operator-9-0 []
+  (= false
+     (do (dosync (alter *arrays* assoc 2 [0 1 2 3 4]))
+         (execute-instruction 0x90000001)
+         (contains? *arrays* 2))))
+
+; TODO: - abandon the 0 array
+;       - abandond an inactive array
+
+(defsuite test-exec-operator-9 []
+  test-exec-operator-9-0)
+
+(simple-report (test-exec-operator-9))
+
 (deftest test-exec-operator-13-0 [_ setup-registers]
   "A <- 6"
   (= 6 (exec-and-fetch-register 0xde000006 7))) ; % 1101 1110 ...

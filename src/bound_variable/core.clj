@@ -69,6 +69,11 @@
         size (get-register-value :c instruction)]
     (dosync (alter *arrays* assoc array (vec (replicate size 0))))))
 
+; Operator 9: array abandonment
+(defmethod execute-instruction 0x9 [instruction]
+  (let [array (get-register-value :c instruction)]
+    (dosync (alter *arrays* dissoc array))))
+
 ; Operator 13: A <- value
 (defmethod execute-instruction 0xd [instruction]
   (let [ra (bit-and

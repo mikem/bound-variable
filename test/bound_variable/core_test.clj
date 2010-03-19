@@ -55,6 +55,11 @@
   :after [_]
   (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
 
+(defcontext setup-arrays []
+  (dosync (ref-set *arrays* {}))
+  :after [_]
+  (dosync (ref-set *arrays* {})))
+
 (deftest test-get-register-value [_ setup-registers]
   (= 2 (get-register-value :a 0x00000042))  ; % 0000 0000 0100 0010
   (= 1 (get-register-value :b 0x00000042))  ; % 0000 0000 0100 0010
@@ -127,11 +132,35 @@
   "1 = 4 / 3 (A = B / C)"
   (= 1 (exec-and-fetch-register 0x500001e2 7))) ; % 0000 0001 1110 0010
 
+; TODO: test divide by zero
+
 (defsuite test-exec-operator-5 []
   test-exec-operator-5-0
   test-exec-operator-5-1)
 
 (simple-report (test-exec-operator-5))
+
+(deftest test-exec-operator-8-0 [_ setup-registers
+                                 _ setup-arrays]
+  "allocate array 4 of size 3"
+  (= [0 0 0]
+     (do (execute-instruction 0x80000022) ; % 0000 0000 0010 0010
+         (@*arrays* 4))))
+
+(deftest test-exec-operator-8-1 [_ setup-registers
+                                 _ setup-arrays]
+  "allocate array 3 of size 4"
+  (= [0 0 0 0]
+     (do (execute-instruction 0x80000014) ; % 0000 0000 0001 0100
+         (@*arrays* 3))))
+
+; TODO: test allocating an array that already exists
+
+(defsuite test-exec-operator-8 []
+  test-exec-operator-8-0
+  test-exec-operator-8-1)
+
+(simple-report (test-exec-operator-8))
 
 (deftest test-exec-operator-13-0 [_ setup-registers]
   "A <- 6"

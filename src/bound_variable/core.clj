@@ -14,8 +14,10 @@
 (def *register-mask* 0x7) ; binary 0000 0000 0000 0111
 (def *load-register-offset* (- *word-size* *opcode-size* *bits-per-register*))
 (def *load-value-mask* 0x01ffffff) ; 0000 0001 1111 1111 1111 1111 1111 1111
+
 ;;; eight registers, initialized to 0
 (def *registers* (ref [0 0 0 0 0 0 0 0]))
+(def *arrays* (ref {}))
 
 (defn get-opcode [instruction]
   (bit-shift-right instruction *get-opcode-shift-amount*))
@@ -54,14 +56,18 @@
   (execute-arithmetic-instruction instruction *))
 
 ; Operator 5: A = (B / C)
-; What should happen if C is zero? Currently, just throw a divide-by-zero
-; ArithmeticException
 (defmethod execute-instruction 0x5 [instruction]
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
         dividend (int (/ rbv rcv))]
     (dosync (alter *registers* assoc ra dividend))))
+
+; Operator 8: array allocation
+(defmethod execute-instruction 0x8 [instruction]
+  (let [array (get-register-value :b instruction)
+        size (get-register-value :c instruction)]
+    (dosync (alter *arrays* assoc array (vec (replicate size 0))))))
 
 ; Operator 13: A <- value
 (defmethod execute-instruction 0xd [instruction]

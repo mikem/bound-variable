@@ -56,7 +56,8 @@
   (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
 
 (defcontext setup-arrays []
-  (dosync (ref-set *arrays* {}))
+  (dosync (ref-set *arrays* {3 [5 6 7 8]
+                             1 [22 33 44]}))
   :after [_]
   (dosync (ref-set *arrays* {})))
 
@@ -80,6 +81,22 @@
   test-exec-operator-0-1)
 
 (simple-report (test-exec-operator-0))
+
+(deftest test-exec-operator-1-0 [_ setup-registers
+                                 _ setup-arrays]
+  "8 = ((@*arrays* 3) 3)"
+  (= 8 (exec-and-fetch-register 0x100001d2 7))) ; % 0000 0001 1101 0010
+
+(deftest test-exec-operator-1-1 [_ setup-registers
+                                 _ setup-arrays]
+  "44 = ((@*arrays* 1) 2)"
+  (= 44 (exec-and-fetch-register 0x10000181 6))) ; % 0000 0001 1000 0001
+
+(defsuite test-exec-operator-1 []
+  test-exec-operator-1-0
+  test-exec-operator-1-1)
+
+(simple-report (test-exec-operator-1))
 
 (deftest test-exec-operator-3-0 [_ setup-registers]
   "4 = 3 + 1 (A = B + C)"

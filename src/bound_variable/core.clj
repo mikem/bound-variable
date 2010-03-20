@@ -40,6 +40,13 @@
     (when-not (zero? rcv)
       (dosync (alter *registers* assoc ra rbv)))))
 
+; Operator 1: array access
+(defmethod execute-instruction 0x1 [instruction]
+  (let [ra (get-register :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)]
+    (dosync (alter *registers* assoc ra ((@*arrays* rbv) rcv)))))
+
 (defn execute-arithmetic-instruction [instruction op]
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)

@@ -8,6 +8,10 @@
   (execute-instruction instruction)
   (*registers* register))
 
+(defn exec-and-fetch-from-array [instruction array index]
+  (execute-instruction instruction)
+  ((@*arrays* array) index))
+
 (deftest test-get-opcode []
   (= 0x0 (get-opcode 0x01234567))
   (= 0x1 (get-opcode 0x12345678))
@@ -97,6 +101,14 @@
   test-exec-operator-1-1)
 
 (simple-report (test-exec-operator-1))
+
+(deftest test-exec-operator-2-0 [_ setup-registers
+                                 _ setup-arrays
+                                 instruction 0x2000008e]
+  "A[B] = C"
+  (= 4294967276 (exec-and-fetch-from-array 0x2000008e 3 2))) ; % 0000 0000 1000 1110
+
+(simple-report (test-exec-operator-2-0))
 
 (deftest test-exec-operator-3-0 [_ setup-registers]
   "4 = 3 + 1 (A = B + C)"

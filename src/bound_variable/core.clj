@@ -42,6 +42,9 @@
 (defn get-array-value [array index]
   ((@*arrays* array) index))
 
+(defn set-array-value [array index value]
+  (dosync (alter *arrays* assoc array (assoc (@*arrays* array) index value))))
+
 (defmulti execute-instruction get-opcode)
 
 ; Operator 0: move contents of B to A if contents of C is non-zero
@@ -58,6 +61,13 @@
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
     (set-register-value ra (get-array-value rbv rcv))))
+
+; Operator 2: array amendment
+(defmethod execute-instruction 0x2 [instruction]
+  (let [rav (get-register-value :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)]
+    (set-array-value rav rbv rcv)))
 
 (defn execute-arithmetic-instruction [instruction op]
   (let [ra (get-register :a instruction)

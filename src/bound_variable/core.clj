@@ -92,6 +92,14 @@
         dividend (int (/ rbv rcv))]
     (set-register-value ra dividend)))
 
+; Operator 6: A = ~(B & C)
+(defmethod execute-instruction 0x6 [instruction]
+  (let [ra (get-register :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)
+        result (bit-not (bit-and rbv rcv))]
+    (set-register-value ra result)))
+
 ; Operator 8: array allocation
 (defmethod execute-instruction 0x8 [instruction]
   (let [array (get-register-value :b instruction)

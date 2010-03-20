@@ -103,8 +103,7 @@
 (simple-report (test-exec-operator-1))
 
 (deftest test-exec-operator-2-0 [_ setup-registers
-                                 _ setup-arrays
-                                 instruction 0x2000008e]
+                                 _ setup-arrays]
   "A[B] = C"
   (= 4294967276 (exec-and-fetch-from-array 0x2000008e 3 2))) ; % 0000 0000 1000 1110
 
@@ -168,6 +167,12 @@
   test-exec-operator-5-1)
 
 (simple-report (test-exec-operator-5))
+
+(deftest test-exec-operator-6-0 [_ setup-registers]
+  "A = ~(B & C)"
+  (= -1 (exec-and-fetch-register 0x60000188 6))) ; % 0000 0001 1000 1000
+
+(simple-report (test-exec-operator-6-0))
 
 (deftest test-exec-operator-8-0 [_ setup-registers
                                  _ setup-arrays]

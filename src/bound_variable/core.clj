@@ -30,6 +30,18 @@
 (defn get-register-value [register instruction]
   (*registers* (get-register register instruction)))
 
+(defn set-register-value [register value]
+  (dosync (alter *registers* assoc register value)))
+
+(defn allocate-array [array size]
+  (dosync (alter *arrays* assoc array (vec (replicate size 0)))))
+
+(defn abandon-array [array]
+  (dosync (alter *arrays* dissoc array)))
+
+(defn get-array-value [array index]
+  ((@*arrays* array) index))
+
 (defmulti execute-instruction get-opcode)
 
 ; Operator 0: move contents of B to A if contents of C is non-zero
@@ -38,21 +50,21 @@
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
     (when-not (zero? rcv)
-      (dosync (alter *registers* assoc ra rbv)))))
+      (set-register-value ra rbv))))
 
 ; Operator 1: array access
 (defmethod execute-instruction 0x1 [instruction]
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
-    (dosync (alter *registers* assoc ra ((@*arrays* rbv) rcv)))))
+    (set-register-value ra (get-array-value rbv rcv))))
 
 (defn execute-arithmetic-instruction [instruction op]
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
         result (rem (op rbv rcv) *integer-modulus*)]
-    (dosync (alter *registers* assoc ra result))))
+    (set-register-value ra result)))
 
 ; Operator 3: A = (B + C) % 2^32
 (defmethod execute-instruction 0x3 [instruction]
@@ -68,18 +80,17 @@
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
         dividend (int (/ rbv rcv))]
-    (dosync (alter *registers* assoc ra dividend))))
+    (set-register-value ra dividend)))
 
 ; Operator 8: array allocation
 (defmethod execute-instruction 0x8 [instruction]
   (let [array (get-register-value :b instruction)
         size (get-register-value :c instruction)]
-    (dosync (alter *arrays* assoc array (vec (replicate size 0))))))
+    (allocate-array array size)))
 
 ; Operator 9: array abandonment
 (defmethod execute-instruction 0x9 [instruction]
-  (let [array (get-register-value :c instruction)]
-    (dosync (alter *arrays* dissoc array))))
+  (abandon-array (get-register-value :c instruction)))
 
 ; Operator 13: A <- value
 (defmethod execute-instruction 0xd [instruction]
@@ -87,4 +98,4 @@
              (bit-shift-right instruction *load-register-offset*)
              *register-mask*)
         value (bit-and instruction *load-value-mask*)]
-    (dosync (alter *registers* assoc ra value))))
+    (set-register-value ra value)))

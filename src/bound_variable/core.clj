@@ -45,6 +45,8 @@
 (defn set-array-value [array index value]
   (dosync (alter *arrays* assoc array (assoc (@*arrays* array) index value))))
 
+(defn abort [] (System/exit 1))
+
 (defmulti execute-instruction get-opcode)
 
 ; Operator 0: move contents of B to A if contents of C is non-zero
@@ -99,6 +101,10 @@
         rcv (get-register-value :c instruction)
         result (bit-not (bit-and rbv rcv))]
     (set-register-value ra result)))
+
+; Operator 7: HALT
+(defmethod execute-instruction 0x7 [instruction]
+  (abort))
 
 ; Operator 8: array allocation
 (defmethod execute-instruction 0x8 [instruction]

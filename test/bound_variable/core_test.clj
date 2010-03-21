@@ -174,6 +174,16 @@
 
 (simple-report (test-exec-operator-6-0))
 
+(deftest test-exec-operator-7 []
+  "Operator 7 is the HALT instruction; call (abort)"
+  (= true
+     (let [called (atom false)]
+       (binding [bound-variable.core/abort (fn [] (swap! called (fn [_] true)))]
+         (execute-instruction 0x70000000))
+       @called)))
+
+(simple-report (test-exec-operator-7))
+
 (deftest test-exec-operator-8-0 [_ setup-registers
                                  _ setup-arrays]
   "allocate array 4 of size 3"

@@ -6,6 +6,18 @@
 
 ;(set-colorize false)
 
+;;; contexts
+(defcontext setup-registers []
+  (dosync (ref-set *registers* [1 2 3 0 4 4294967296 4294967276 0]))
+  :after [_]
+  (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
+
+(defcontext setup-arrays []
+  (dosync (ref-set *arrays* {3 [5 6 7 8]
+                             1 [22 33 44]}))
+  :after [_]
+  (dosync (ref-set *arrays* {})))
+
 ;;; helper functions
 (defn exec-and-fetch-register [instruction register]
   (execute-instruction instruction)
@@ -54,17 +66,6 @@
     0x00000000 :a 0x0
     0x00000000 :b 0x0
     0x00000000 :c 0x0))
-
-(defcontext setup-registers []
-  (dosync (ref-set *registers* [1 2 3 0 4 4294967296 4294967276 0]))
-  :after [_]
-  (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
-
-(defcontext setup-arrays []
-  (dosync (ref-set *arrays* {3 [5 6 7 8]
-                             1 [22 33 44]}))
-  :after [_]
-  (dosync (ref-set *arrays* {})))
 
 (spec test-get-register-value
   (given [_ setup-registers]
@@ -164,14 +165,29 @@
 ; TODO: test allocating an array that already exists
 
 (spec test-exec-operator-9
-  (is
+  (given [_ setup-registers]
     (= false
        (do (dosync (alter *arrays* assoc 2 [0 1 2 3 4]))
            (execute-instruction 0x90000001)
-           (contains? *arrays* 2)))))
+           (contains? @*arrays* 2)))))
 
 ; TODO: - abandon the 0 array
 ;       - abandond an inactive array
+
+(spec test-exec-operator-10
+  (given [_ setup-registers]
+    (= true
+       (let [called (atom false)]
+         (binding [bound-variable.core/print-char (fn [_] (swap! called (fn [_] true)))]
+           (execute-instruction 0xa0000002))
+         @called))))
+
+  ;(dosync (ref-set *registers* [1 2 3 0 4 4294967296 4294967276 0]))
+(spec test-exec-operator-11
+  (given [_ setup-registers]
+    (= 100
+       (binding [bound-variable.core/read-char (fn [] (int (.charValue \d)))]
+         (exec-and-fetch-register 0xb0000003 3)))))  ; % 0000 0000 0000 0011
 
 (spec test-exec-operator-13
   (given [_ setup-registers]

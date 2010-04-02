@@ -45,6 +45,12 @@
 (defn set-array-value [array index value]
   (dosync (alter *arrays* assoc array (assoc (@*arrays* array) index value))))
 
+(defn print-char [c]
+  (print c))
+
+(defn read-char []
+  (.read *in*))
+
 (defn abort [] (System/exit 1))
 
 (defmulti execute-instruction get-opcode)
@@ -115,6 +121,14 @@
 ; Operator 9: array abandonment
 (defmethod execute-instruction 0x9 [instruction]
   (abandon-array (get-register-value :c instruction)))
+
+; Operator 10: output
+(defmethod execute-instruction 0xa [instruction]
+  (print-char (get-register-value :c instruction)))
+
+; Operator 11: input
+(defmethod execute-instruction 0xb [instruction]
+  (set-register-value (get-register :c instruction) (read-char)))
 
 ; Operator 13: A <- value
 (defmethod execute-instruction 0xd [instruction]

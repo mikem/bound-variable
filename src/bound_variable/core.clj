@@ -51,7 +51,10 @@
 (defn read-char []
   (.read *in*))
 
-(defn abort [] (System/exit 1))
+(defn abort []
+  (do
+    (println "Aborting!")
+    (System/exit 1)))
 
 (defmulti execute-instruction get-opcode)
 
@@ -137,3 +140,28 @@
              *register-mask*)
         value (bit-and instruction *load-value-mask*)]
     (set-register-value ra value)))
+
+(defn get-int-from-byte-quad [byte-quad]
+  (loop [shift-amount 24
+         quad byte-quad
+         result 0]
+    (if (empty? quad)
+      result
+      (recur (- shift-amount 8)
+             (rest quad)
+             (bit-or result (bit-shift-left (bit-and 0xff (first quad)) shift-amount))))))
+
+(defn get-int-vector-from-byte-array [arr]
+  (loop [partitioned-arr (partition 4 (map
+                                        #(byte (if (bit-test % 7)
+                                                 (bit-or % -128)
+                                                 (bit-and % 127)))
+                                        arr))
+         int-vec []]
+    (if (empty? partitioned-arr)
+      int-vec
+      (recur (rest partitioned-arr)
+             (conj int-vec (get-int-from-byte-quad (first partitioned-arr)))))))
+
+
+(defn initialize [input-filename] 0)

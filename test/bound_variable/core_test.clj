@@ -2,7 +2,9 @@
   (:use [bound-variable.core] :reload-all)
   (:use [com.stuartsierra.lazytest :only (is are given spec defcontext find-spec)])
   (:use [com.stuartsierra.lazytest.report :only (spec-report)])
-  (:use [com.stuartsierra.lazytest.color :only (set-colorize)]))
+  (:use [com.stuartsierra.lazytest.color :only (set-colorize)])
+  (:use [clojure.contrib.io :only (to-byte-array)])
+  (:import [java.io File]))
 
 ;(set-colorize false)
 
@@ -196,5 +198,19 @@
   (given [_ setup-registers]
     "A <- 33554431"
     (= 33554431 (exec-and-fetch-register 0xdfffffff 7)))) ; % 1101 1111 ...
+
+;(let [n 0xda] (byte (if (bit-test n 7) (bit-or n -128) (bit-and n 127))))
+(spec test-read-input-file
+  (is
+    (= [0x01234567 0x12345678 0x23456789 0x3456789a 0x456789ab
+        0x56789abc 0x6789abcd 0x789abcde 0x89abcdef 0x9abcdef0
+        0xabcdef01 0xbcdef012 0xcdef0123]
+       (get-int-vector-from-byte-array (to-byte-array (File. "sample-input-file"))))))
+       ;(read-input-file "sample-input-file"))))
+
+;(spec test-initialize
+  ; 0 array contains contents of program scroll
+  ; all registers initialized to 0
+  ; program counter contains 0
 
 (spec-report ((find-spec 'bound-variable.core-test)))

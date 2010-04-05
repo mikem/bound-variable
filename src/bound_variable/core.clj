@@ -145,10 +145,10 @@
   (loop [shift-amount 24
          quad byte-quad
          result 0]
-    (if (empty? quad)
+    (if-not quad
       result
       (recur (- shift-amount 8)
-             (rest quad)
+             (next quad)
              (bit-or result (bit-shift-left (bit-and 0xff (first quad)) shift-amount))))))
 
 (defn get-int-vector-from-byte-array [arr]
@@ -158,9 +158,9 @@
                                                  (bit-and % 127)))
                                         arr))
          int-vec []]
-    (if (empty? partitioned-arr)
+    (if-not partitioned-arr
       int-vec
-      (recur (rest partitioned-arr)
+      (recur (next partitioned-arr)
              (conj int-vec (get-int-from-byte-quad (first partitioned-arr)))))))
 
 

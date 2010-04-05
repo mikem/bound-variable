@@ -142,14 +142,10 @@
     (set-register-value ra value)))
 
 (defn get-int-from-byte-quad [byte-quad]
-  (loop [shift-amount 24
-         quad byte-quad
-         result 0]
-    (if-not quad
-      result
-      (recur (- shift-amount 8)
-             (next quad)
-             (bit-or result (bit-shift-left (bit-and 0xff (first quad)) shift-amount))))))
+  (->                       (bit-and 0xff (nth byte-quad 3))
+    (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 2)) 8))
+    (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 1)) 16))
+    (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 0)) 24))))
 
 (defn get-int-vector-from-byte-array [arr]
   (loop [partitioned-arr (partition 4 (map
@@ -162,6 +158,5 @@
       int-vec
       (recur (next partitioned-arr)
              (conj int-vec (get-int-from-byte-quad (first partitioned-arr)))))))
-
 
 (defn initialize [input-filename] 0)

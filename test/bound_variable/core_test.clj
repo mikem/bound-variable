@@ -199,14 +199,26 @@
     "A <- 33554431"
     (= 33554431 (exec-and-fetch-register 0xdfffffff 7)))) ; % 1101 1111 ...
 
-;(let [n 0xda] (byte (if (bit-test n 7) (bit-or n -128) (bit-and n 127))))
-(spec test-read-input-file
+(def sample-input-array (into-array [0x01 0x23 0x45 0x67
+                                     0x12 0x34 0x56 0x78
+                                     0x23 0x45 0x67 0x89
+                                     0x34 0x56 0x78 0x9a
+                                     0x45 0x67 0x89 0xab
+                                     0x56 0x78 0x9a 0xbc
+                                     0x67 0x89 0xab 0xcd
+                                     0x78 0x9a 0xbc 0xde
+                                     0x89 0xab 0xcd 0xef
+                                     0x9a 0xbc 0xde 0xf0
+                                     0xab 0xcd 0xef 0x01
+                                     0xbc 0xde 0xf0 0x12
+                                     0xcd 0xef 0x01 0x23]))
+
+(spec test-get-int-vector-from-byte-array
   (is
     (= [0x01234567 0x12345678 0x23456789 0x3456789a 0x456789ab
         0x56789abc 0x6789abcd 0x789abcde 0x89abcdef 0x9abcdef0
         0xabcdef01 0xbcdef012 0xcdef0123]
-       (get-int-vector-from-byte-array (to-byte-array (File. "sample-input-file"))))))
-       ;(read-input-file "sample-input-file"))))
+       (get-int-vector-from-byte-array sample-input-array))))
 
 ;(spec test-initialize
   ; 0 array contains contents of program scroll

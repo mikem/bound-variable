@@ -159,4 +159,12 @@
       (recur (next partitioned-arr)
              (conj int-vec (get-int-from-byte-quad (first partitioned-arr)))))))
 
-(defn initialize [input-filename] 0)
+(defn initialize [input-filename]
+  ; TODO: Hard coded array
+  (dosync (alter *arrays* assoc 0
+                 [0x01234567 0x12345678
+                  0x23456789 0x3456789a
+                  0x456789ab 0x56789abc
+                  0x6789abcd 0x789abcde
+                  0x89abcdef 0x9abcdef0
+                  0xabcdef01 0xbcdef012 0xcdef0123])))

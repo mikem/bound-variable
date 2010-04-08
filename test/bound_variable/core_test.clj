@@ -3,8 +3,7 @@
   (:use [com.stuartsierra.lazytest :only (is are given spec defcontext find-spec)])
   (:use [com.stuartsierra.lazytest.report :only (spec-report)])
   (:use [com.stuartsierra.lazytest.color :only (set-colorize)])
-  (:use [clojure.contrib.io :only (to-byte-array)])
-  (:import [java.io File]))
+  (:use [clojure.contrib.io :only (to-byte-array)]))
 
 ;(set-colorize false)
 
@@ -20,7 +19,12 @@
   :after [_]
   (dosync (ref-set *arrays* {})))
 
-;;; helper functions
+(defcontext create-temp-file []
+  (java.io.File/createTempFile "bound-variable-" "-test")
+  :after [f]
+  (.delete f))
+
+;;; helper functions & data
 (defn exec-and-fetch-register [instruction register]
   (execute-instruction instruction)
   (*registers* register))
@@ -29,6 +33,31 @@
   (execute-instruction instruction)
   ((@*arrays* array) index))
 
+(defn write-binary-file [filename arr]
+  (with-open [f (java.io.FileOutputStream. filename)]
+    (.write f arr)))
+
+(def sample-input-array (into-array [0x01 0x23 0x45 0x67
+                                     0x12 0x34 0x56 0x78
+                                     0x23 0x45 0x67 0x89
+                                     0x34 0x56 0x78 0x9a
+                                     0x45 0x67 0x89 0xab
+                                     0x56 0x78 0x9a 0xbc
+                                     0x67 0x89 0xab 0xcd
+                                     0x78 0x9a 0xbc 0xde
+                                     0x89 0xab 0xcd 0xef
+                                     0x9a 0xbc 0xde 0xf0
+                                     0xab 0xcd 0xef 0x01
+                                     0xbc 0xde 0xf0 0x12
+                                     0xcd 0xef 0x01 0x23]))
+
+(def sample-byte-array (byte-array (map
+                                     #(byte (if (bit-test % 7)
+                                                (bit-or % -128)
+                                                (bit-and % 127)))
+                                     sample-input-array)))
+
+;;; specs begin
 (spec test-get-opcode
   (are [instruction opcode] (= (get-opcode instruction) opcode)
     0x01234567 0x0
@@ -184,7 +213,6 @@
            (execute-instruction 0xa0000002))
          @called))))
 
-  ;(dosync (ref-set *registers* [1 2 3 0 4 4294967296 4294967276 0]))
 (spec test-exec-operator-11
   (given [_ setup-registers]
     (= 100
@@ -199,20 +227,6 @@
     "A <- 33554431"
     (= 33554431 (exec-and-fetch-register 0xdfffffff 7)))) ; % 1101 1111 ...
 
-(def sample-input-array (into-array [0x01 0x23 0x45 0x67
-                                     0x12 0x34 0x56 0x78
-                                     0x23 0x45 0x67 0x89
-                                     0x34 0x56 0x78 0x9a
-                                     0x45 0x67 0x89 0xab
-                                     0x56 0x78 0x9a 0xbc
-                                     0x67 0x89 0xab 0xcd
-                                     0x78 0x9a 0xbc 0xde
-                                     0x89 0xab 0xcd 0xef
-                                     0x9a 0xbc 0xde 0xf0
-                                     0xab 0xcd 0xef 0x01
-                                     0xbc 0xde 0xf0 0x12
-                                     0xcd 0xef 0x01 0x23]))
-
 (spec test-get-int-vector-from-byte-array
   (is
     (= [0x01234567 0x12345678 0x23456789 0x3456789a 0x456789ab
@@ -220,7 +234,14 @@
         0xabcdef01 0xbcdef012 0xcdef0123]
        (get-int-vector-from-byte-array sample-input-array))))
 
-;(spec test-initialize
+(spec test-initialize
+  (given [f create-temp-file]
+    (= [0x01234567 0x12345678 0x23456789 0x3456789a 0x456789ab
+        0x56789abc 0x6789abcd 0x789abcde 0x89abcdef 0x9abcdef0
+        0xabcdef01 0xbcdef012 0xcdef0123]
+       (do (write-binary-file f sample-byte-array)
+           (initialize (.getCanonicalPath f))
+           (@*arrays* 0)))))
   ; 0 array contains contents of program scroll
   ; all registers initialized to 0
   ; program counter contains 0

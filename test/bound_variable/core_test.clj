@@ -2,8 +2,7 @@
   (:use [bound-variable.core] :reload-all)
   (:use [com.stuartsierra.lazytest :only (is are given spec defcontext find-spec)])
   (:use [com.stuartsierra.lazytest.report :only (spec-report)])
-  (:use [com.stuartsierra.lazytest.color :only (set-colorize)])
-  (:use [clojure.contrib.io :only (to-byte-array)]))
+  (:use [com.stuartsierra.lazytest.color :only (set-colorize)]))
 
 ;(set-colorize false)
 
@@ -51,11 +50,11 @@
                                      0xbc 0xde 0xf0 0x12
                                      0xcd 0xef 0x01 0x23]))
 
-(def sample-byte-array (byte-array (map
-                                     #(byte (if (bit-test % 7)
-                                                (bit-or % -128)
-                                                (bit-and % 127)))
-                                     sample-input-array)))
+(def sample-byte-array (byte-array (map convert-to-byte sample-input-array)))
+
+(def small-sample-input-array (into-array [0x02 0x46 0x8a 0xce]))
+
+(def small-sample-byte-array (byte-array (map convert-to-byte small-sample-input-array)))
 
 ;;; specs begin
 (spec test-get-opcode
@@ -240,6 +239,10 @@
         0x56789abc 0x6789abcd 0x789abcde 0x89abcdef 0x9abcdef0
         0xabcdef01 0xbcdef012 0xcdef0123]
        (do (write-binary-file f sample-byte-array)
+           (initialize (.getCanonicalPath f))
+           (@*arrays* 0)))
+    (= [0x02468ace]
+       (do (write-binary-file f small-sample-byte-array)
            (initialize (.getCanonicalPath f))
            (@*arrays* 0)))))
   ; 0 array contains contents of program scroll

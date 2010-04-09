@@ -1,4 +1,5 @@
-(ns bound-variable.core)
+(ns bound-variable.core
+  (:use [clojure.contrib.io :only (to-byte-array)]))
 
 ;;; some constants
 (def *word-size* 32)
@@ -19,6 +20,11 @@
 (def *registers* (ref [0 0 0 0 0 0 0 0]))
 (def *arrays* (ref {}))
 
+(defn convert-to-byte [value]
+  (byte (if (bit-test value 7)
+          (bit-or value -128)
+          (bit-and value 127))))
+
 (defn get-opcode [instruction]
   (bit-shift-right instruction *get-opcode-shift-amount*))
 
@@ -33,17 +39,20 @@
 (defn set-register-value [register value]
   (dosync (alter *registers* assoc register value)))
 
-(defn allocate-array [array size]
-  (dosync (alter *arrays* assoc array (vec (replicate size 0)))))
+(defn set-array [array-idx src-array]
+  (dosync (alter *arrays* assoc array-idx src-array)))
 
-(defn abandon-array [array]
-  (dosync (alter *arrays* dissoc array)))
+(defn allocate-array [array-idx size]
+  (set-array array-idx (vec (replicate size 0))))
 
-(defn get-array-value [array index]
-  ((@*arrays* array) index))
+(defn abandon-array [array-idx]
+  (dosync (alter *arrays* dissoc array-idx)))
 
-(defn set-array-value [array index value]
-  (dosync (alter *arrays* assoc array (assoc (@*arrays* array) index value))))
+(defn get-array-value [array-idx index]
+  ((@*arrays* array-idx) index))
+
+(defn set-array-value [array-idx index value]
+  (dosync (alter *arrays* assoc array-idx (assoc (@*arrays* array-idx) index value))))
 
 (defn print-char [c]
   (print c))
@@ -148,11 +157,7 @@
     (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 0)) 24))))
 
 (defn get-int-vector-from-byte-array [arr]
-  (loop [partitioned-arr (partition 4 (map
-                                        #(byte (if (bit-test % 7)
-                                                 (bit-or % -128)
-                                                 (bit-and % 127)))
-                                        arr))
+  (loop [partitioned-arr (partition 4 (map convert-to-byte arr))
          int-vec []]
     (if-not partitioned-arr
       int-vec
@@ -160,11 +165,8 @@
              (conj int-vec (get-int-from-byte-quad (first partitioned-arr)))))))
 
 (defn initialize [input-filename]
-  ; TODO: Hard coded array
-  (dosync (alter *arrays* assoc 0
-                 [0x01234567 0x12345678
-                  0x23456789 0x3456789a
-                  0x456789ab 0x56789abc
-                  0x6789abcd 0x789abcde
-                  0x89abcdef 0x9abcdef0
-                  0xabcdef01 0xbcdef012 0xcdef0123])))
+  (->> input-filename
+       (java.io.File.)
+       (to-byte-array)
+       (get-int-vector-from-byte-array)
+       (set-array 0)))

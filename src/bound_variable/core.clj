@@ -99,7 +99,9 @@
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
         result (rem (op rbv rcv) *integer-modulus*)]
-    (set-register-value ra result)))
+    (->> result
+         (#(if (<= % Integer/MAX_VALUE) (int %) (long %)))
+         (set-register-value ra))))
 
 ; Operator 3: A = (B + C) % 2^32
 (defmethod execute-instruction 0x3 [instruction]
@@ -187,10 +189,26 @@
        (get-int-vector-from-byte-array)
        (set-array 0)))
 
+(defn print-instruction-info [instruction]
+  (let [hex-instruction (Integer/toHexString (get-array-value 0 @*pc*))
+        ra (get-register :a instruction)
+        rb (get-register :b instruction)
+        rc (get-register :c instruction)
+        rav (get-register-value :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)]
+    (println (str "Executing 0x" hex-instruction
+                  ", Ra: " ra " -> " rav
+                  ", Rb: " rb " -> " rbv
+                  ", Rc: " rc " -> " rcv))
+    (println @*registers*)))
+
 (defn run []
-  (execute-instruction (get-array-value 0 @*pc*))
-  (swap! *pc* inc)
-  (recur))
+  (let [instruction (get-array-value 0 @*pc*)]
+    ;(print-instruction-info instruction)
+    (execute-instruction instruction)
+    (swap! *pc* inc)
+    (recur)))
 
 (defn -main [& args]
   (with-command-line args

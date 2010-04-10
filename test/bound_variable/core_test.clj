@@ -132,16 +132,16 @@
 (spec test-exec-operator-3
   (given [_ setup-registers]
     "4 = 3 + 1 (A = B + C)"
-    (= 4 (exec-and-fetch-register 0x300000d0 3)))  ; % 0000 0000 1101 0000
+    (identical? 4 (exec-and-fetch-register 0x300000d0 3)))  ; % 0000 0000 1101 0000
   (given [_ setup-registers]
     "4 = 2 + 2 (A = B + C)"
-    (= 4 (exec-and-fetch-register 0x30000109 4)))  ; % 0000 0001 0000 1001
+    (identical? 4 (exec-and-fetch-register 0x30000109 4)))  ; % 0000 0001 0000 1001
   (given [_ setup-registers]
     "5 = 2 + 3 (A = B + C)"
-    (= 5 (exec-and-fetch-register 0x3000014a 5)))  ; % 0000 0001 0100 1010
+    (identical? 5 (exec-and-fetch-register 0x3000014a 5)))  ; % 0000 0001 0100 1010
   (given [_ setup-registers]
     "1 = 4294967296 + 1 (A = B + C)"
-    (= 1 (exec-and-fetch-register 0x300001a8 6)))) ; % 0000 0001 1010 1000
+    (identical? 1 (exec-and-fetch-register 0x300001a8 6)))) ; % 0000 0001 1010 1000
 
 (spec test-exec-operator-4
   (given [_ setup-registers]

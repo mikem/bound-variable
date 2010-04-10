@@ -1,5 +1,7 @@
 (ns bound-variable.core
-  (:use [clojure.contrib.io :only (to-byte-array)]))
+  (:gen-class)
+  (:use [clojure.contrib.io :only (to-byte-array)]
+        [clojure.contrib.command-line :only (with-command-line)]))
 
 ;;; some constants
 (def *word-size* 32)
@@ -150,7 +152,9 @@
   (let [rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
     (set-array 0 (@*arrays* rbv))
-    (swap! *pc* (fn [_] rcv))))
+    ; we decrement the value in register C as it's incremented again after this
+    ; instruction is executed
+    (reset! *pc* (dec rcv))))
 
 ; Operator 13: A <- value
 (defmethod execute-instruction 0xd [instruction]
@@ -176,9 +180,21 @@
 
 (defn initialize [input-filename]
   (dosync (ref-set *registers* [0 0 0 0 0 0 0 0]))
-  (swap! *pc* (fn [_] 0))
+  (reset! *pc* 0)
   (->> input-filename
        (java.io.File.)
        (to-byte-array)
        (get-int-vector-from-byte-array)
        (set-array 0)))
+
+(defn run []
+  (execute-instruction (get-array-value 0 @*pc*))
+  (swap! *pc* inc)
+  (recur))
+
+(defn -main [& args]
+  (with-command-line args
+    "Run Universal Machine"
+    [[input-filename i "program scroll (input file)"]]
+    (initialize input-filename)
+    (run)))

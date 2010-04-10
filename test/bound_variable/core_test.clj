@@ -174,7 +174,7 @@
   (is
     (= true
        (let [called (atom false)]
-         (binding [bound-variable.core/abort (fn [] (swap! called (fn [_] true)))]
+         (binding [bound-variable.core/abort (fn [] (reset! called true))]
            (execute-instruction 0x70000000))
          @called))))
 
@@ -208,7 +208,7 @@
   (given [_ setup-registers]
     (= true
        (let [called (atom false)]
-         (binding [bound-variable.core/print-char (fn [_] (swap! called (fn [_] true)))]
+         (binding [bound-variable.core/print-char (fn [_] (reset! called true))]
            (execute-instruction 0xa0000002))
          @called))))
 
@@ -227,7 +227,10 @@
           (= [5 6 7 8]
              (@*arrays* 0))
           ; program counter contains value in register C
-          (= 2 @*pc*)))))
+          ; NOTE: the expected program counter is one less than the value
+          ; contained in register C, as it's incremented immediately after the
+          ; instruction is executed in the main program.
+          (= 1 @*pc*)))))
 
 (spec test-exec-operator-13
   (given [_ setup-registers]
@@ -277,7 +280,7 @@
     "Ensure program counter set to 0, v2"
     (= 0
        (do (write-binary-file f small-sample-byte-array)
-           (swap! *pc* inc)
+           (reset! *pc* 22)
            (initialize (.getCanonicalPath f))
            @*pc*))))
 

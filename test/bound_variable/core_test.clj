@@ -218,6 +218,17 @@
        (binding [bound-variable.core/read-char (fn [] (int (.charValue \d)))]
          (exec-and-fetch-register 0xb0000003 3)))))  ; % 0000 0000 0000 0011
 
+(spec test-exec-operator-12
+  (given [_ setup-registers
+          _ setup-arrays]
+    (do (execute-instruction 0xc0000011) ; % 0000 0000 0001 0001
+        (and
+          ; array identified by register B is copied to array 0
+          (= [5 6 7 8]
+             (@*arrays* 0))
+          ; program counter contains value in register C
+          (= 2 @*pc*)))))
+
 (spec test-exec-operator-13
   (given [_ setup-registers]
     "A <- 6"

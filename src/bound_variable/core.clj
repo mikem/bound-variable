@@ -145,6 +145,13 @@
 (defmethod execute-instruction 0xb [instruction]
   (set-register-value (get-register :c instruction) (read-char)))
 
+; Operator 12: load program
+(defmethod execute-instruction 0xc [instruction]
+  (let [rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)]
+    (set-array 0 (@*arrays* rbv))
+    (swap! *pc* (fn [_] rcv))))
+
 ; Operator 13: A <- value
 (defmethod execute-instruction 0xd [instruction]
   (let [ra (bit-and

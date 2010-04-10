@@ -235,18 +235,39 @@
 
 (spec test-initialize
   (given [f create-temp-file]
+    "Set 0 array to contents of file, v1"
     (= [0x01234567 0x12345678 0x23456789 0x3456789a 0x456789ab
         0x56789abc 0x6789abcd 0x789abcde 0x89abcdef 0x9abcdef0
         0xabcdef01 0xbcdef012 0xcdef0123]
        (do (write-binary-file f sample-byte-array)
            (initialize (.getCanonicalPath f))
            (@*arrays* 0)))
+    "Set 0 array to contents of file, v2"
     (= [0x02468ace]
        (do (write-binary-file f small-sample-byte-array)
            (initialize (.getCanonicalPath f))
-           (@*arrays* 0)))))
-  ; 0 array contains contents of program scroll
-  ; all registers initialized to 0
-  ; program counter contains 0
+           (@*arrays* 0)))
+    "Ensure all registers preset with 0, v1"
+    (= [0 0 0 0 0 0 0 0]
+       (do (write-binary-file f small-sample-byte-array)
+           (initialize (.getCanonicalPath f))
+           @*registers*))
+    "Ensure all registers preset with 0, v2"
+    (= [0 0 0 0 0 0 0 0]
+       (do (write-binary-file f small-sample-byte-array)
+           (set-register-value 1 1)
+           (initialize (.getCanonicalPath f))
+           @*registers*))
+    "Ensure program counter set to 0, v1"
+    (= 0
+       (do (write-binary-file f small-sample-byte-array)
+           (initialize (.getCanonicalPath f))
+           @*pc*))
+    "Ensure program counter set to 0, v2"
+    (= 0
+       (do (write-binary-file f small-sample-byte-array)
+           (swap! *pc* inc)
+           (initialize (.getCanonicalPath f))
+           @*pc*))))
 
 (spec-report ((find-spec 'bound-variable.core-test)))

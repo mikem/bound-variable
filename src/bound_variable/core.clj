@@ -20,6 +20,9 @@
 (def *registers* (ref [0 0 0 0 0 0 0 0]))
 (def *arrays* (ref {}))
 
+;;; the program counter
+(def *pc* (atom 0))
+
 (defn convert-to-byte [value]
   (byte (if (bit-test value 7)
           (bit-or value -128)
@@ -165,6 +168,8 @@
              (conj int-vec (get-int-from-byte-quad (first partitioned-arr)))))))
 
 (defn initialize [input-filename]
+  (dosync (ref-set *registers* [0 0 0 0 0 0 0 0]))
+  (swap! *pc* (fn [_] 0))
   (->> input-filename
        (java.io.File.)
        (to-byte-array)

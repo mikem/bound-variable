@@ -166,11 +166,11 @@
         value (bit-and instruction *load-value-mask*)]
     (set-register-value ra value)))
 
-(defn get-int-from-byte-quad [byte-quad]
-  (->                       (bit-and 0xff (nth byte-quad 3))
-    (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 2)) 8))
-    (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 1)) 16))
-    (bit-or (bit-shift-left (bit-and 0xff (nth byte-quad 0)) 24))))
+(defn get-int-from-byte-quad [[b0 b1 b2 b3]]
+  (->                       (bit-and 0xff b3)
+    (bit-or (bit-shift-left (bit-and 0xff b2) 8))
+    (bit-or (bit-shift-left (bit-and 0xff b1) 16))
+    (bit-or (bit-shift-left (bit-and 0xff b0) 24))))
 
 (defn get-int-vector-from-byte-array [arr]
   (loop [partitioned-arr (partition 4 (map convert-to-byte arr))

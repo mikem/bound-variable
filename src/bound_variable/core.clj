@@ -41,8 +41,22 @@
 
 (defn abort []
   (do
-    (println "Aborting!")
+    (println "\nAborting!")
     (System/exit 1)))
+
+(defn print-instruction-info [instruction]
+  (let [hex-instruction (Integer/toHexString (get-array-value 0 @*pc*))
+        ra (get-register :a instruction)
+        rb (get-register :b instruction)
+        rc (get-register :c instruction)
+        rav (get-register-value :a instruction)
+        rbv (get-register-value :b instruction)
+        rcv (get-register-value :c instruction)]
+    (println (str "Executing 0x" hex-instruction
+                  ", Ra: " ra " -> " rav
+                  ", Rb: " rb " -> " rbv
+                  ", Rc: " rc " -> " rcv))
+    (println @*registers*)))
 
 (defmulti execute-instruction get-opcode)
 
@@ -162,20 +176,6 @@
        (to-byte-array)
        (get-int-vector-from-byte-array)
        (set-array 0)))
-
-(defn print-instruction-info [instruction]
-  (let [hex-instruction (Integer/toHexString (get-array-value 0 @*pc*))
-        ra (get-register :a instruction)
-        rb (get-register :b instruction)
-        rc (get-register :c instruction)
-        rav (get-register-value :a instruction)
-        rbv (get-register-value :b instruction)
-        rcv (get-register-value :c instruction)]
-    (println (str "Executing 0x" hex-instruction
-                  ", Ra: " ra " -> " rav
-                  ", Rb: " rb " -> " rbv
-                  ", Rc: " rc " -> " rcv))
-    (println @*registers*)))
 
 (defn run []
   (let [instruction (get-array-value 0 @*pc*)]

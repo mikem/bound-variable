@@ -61,3 +61,6 @@
   (let [ra (bit-and (bit-shift-right instruction *load-register-offset*) *register-mask*)
         value (bit-and instruction *load-value-mask*)]
     (str "lod r" ra ", " value)))
+
+(defmethod decompile-instruction :default [instruction]
+  (format "unknown 0x%h" instruction))

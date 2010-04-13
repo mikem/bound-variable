@@ -1,5 +1,6 @@
 (ns bound-variable.core-test
   (:use [bound-variable.core] :reload-all)
+  (:use [bound-variable.common] :reload-all)
   (:use [com.stuartsierra.lazytest :only (is are given spec defcontext find-spec)])
   (:use [com.stuartsierra.lazytest.report :only (spec-report)])
   (:use [com.stuartsierra.lazytest.color :only (set-colorize)]))

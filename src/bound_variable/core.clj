@@ -1,6 +1,7 @@
 (ns bound-variable.core
   (:gen-class)
   (:use [bound-variable.common]
+        [bound-variable.decompile]
         [clojure.contrib.io :only (to-byte-array)]
         [clojure.contrib.command-line :only (with-command-line)]))
 
@@ -33,7 +34,7 @@
   (dosync (alter *arrays* assoc array-idx (assoc (@*arrays* array-idx) index value))))
 
 (defn print-char [c]
-  (print c))
+  (print (char c)))
 
 (defn read-char []
   (.read *in*))
@@ -183,9 +184,16 @@
     (swap! *pc* inc)
     (recur)))
 
+(defn print-assembly []
+  (doseq [instruction (@*arrays* 0)]
+    (println (decompile-instruction instruction))))
+
 (defn -main [& args]
   (with-command-line args
     "Run Universal Machine"
-    [[input-filename i "program scroll (input file)"]]
+    [[input-filename i "program scroll (input file)"]
+     [decompile? d "prints assembly instead of executing program"]]
     (initialize input-filename)
-    (run)))
+    (if decompile?
+      (print-assembly)
+      (run))))

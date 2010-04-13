@@ -52,10 +52,8 @@
         rav (get-register-value :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
-    (println (str "Executing 0x" hex-instruction
-                  ", Ra: " ra " -> " rav
-                  ", Rb: " rb " -> " rbv
-                  ", Rc: " rc " -> " rcv))
+    (println (format "Executing 0x%1$08x, Ra: %2$d -> %3$10d [0x%3$08x] Rb: %4$d -> %5$10d [0x%5$08x] Rc: %6$d -> %7$10d [0x%7$08x]"
+                     (get-array-value 0 @*pc*) ra rav rb rbv rc rcv))
     (println @*registers*)))
 
 (defmulti execute-instruction get-opcode)
@@ -102,9 +100,9 @@
 ; Operator 5: A = (B / C)
 (defmethod execute-instruction 0x5 [instruction]
   (let [ra (get-register :a instruction)
-        rbv (get-register-value :b instruction)
-        rcv (get-register-value :c instruction)
-        dividend (int (/ rbv rcv))]
+        rbv (bit-and 0xffffffff (get-register-value :b instruction))
+        rcv (bit-and 0xffffffff (get-register-value :c instruction))
+        dividend (int (quot rbv rcv))]
     (set-register-value ra dividend)))
 
 ; Operator 6: A = ~(B & C)

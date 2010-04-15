@@ -84,10 +84,8 @@
   (let [ra (get-register :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)
-        result (rem (op rbv rcv) *integer-modulus*)]
-    (->> result
-         (#(if (<= % Integer/MAX_VALUE) (int %) (long %)))
-         (set-register-value ra))))
+        result (convert-to-int (op rbv rcv))]
+    (set-register-value ra result)))
 
 ; Operator 3: A = (B + C) % 2^32
 (defmethod execute-instruction 0x3 [instruction]

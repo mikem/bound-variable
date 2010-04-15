@@ -4,7 +4,6 @@
 (def *word-size* 32)
 (def *opcode-size* 4)
 (def *get-opcode-shift-amount* (- *word-size* *opcode-size*))
-(def *integer-modulus* (Math/pow 2 32))
 
 ;;; registers
 (def *bits-per-register* 3)
@@ -19,6 +18,11 @@
   (byte (if (bit-test value 7)
           (bit-or value -128)
           (bit-and value 127))))
+
+(defn convert-to-int [value]
+  (int (if (bit-test value 31)
+          (bit-or value -2147483648)
+          (bit-and value 2147483647))))
 
 (defn get-opcode [instruction]
   (bit-shift-right instruction *get-opcode-shift-amount*))

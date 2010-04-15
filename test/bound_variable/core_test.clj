@@ -9,7 +9,7 @@
 
 ;;; contexts
 (defcontext setup-registers []
-  (dosync (ref-set *registers* [1 2 3 0 4 4294967296 4294967276 0]))
+  (dosync (ref-set *registers* [1 2 3 0 4 2147483647 777 0]))
   :after [_]
   (dosync (ref-set *registers* [0 0 0 0 0 0 0 0])))
 
@@ -128,21 +128,21 @@
   (given [_ setup-registers
           _ setup-arrays]
     "A[B] = C"
-    (= 4294967276 (exec-and-fetch-from-array 0x2000008e 3 2)))) ; % 0000 0000 1000 1110
+    (= 777 (exec-and-fetch-from-array 0x2000008e 3 2)))) ; % 0000 0000 1000 1110
 
 (spec test-exec-operator-3
   (given [_ setup-registers]
     "4 = 3 + 1 (A = B + C)"
-    (identical? 4 (exec-and-fetch-register 0x300000d0 3)))  ; % 0000 0000 1101 0000
+    (= 4 (exec-and-fetch-register 0x300000d0 3)))  ; % 0000 0000 1101 0000
   (given [_ setup-registers]
     "4 = 2 + 2 (A = B + C)"
-    (identical? 4 (exec-and-fetch-register 0x30000109 4)))  ; % 0000 0001 0000 1001
+    (= 4 (exec-and-fetch-register 0x30000109 4)))  ; % 0000 0001 0000 1001
   (given [_ setup-registers]
     "5 = 2 + 3 (A = B + C)"
-    (identical? 5 (exec-and-fetch-register 0x3000014a 5)))  ; % 0000 0001 0100 1010
+    (= 5 (exec-and-fetch-register 0x3000014a 5)))  ; % 0000 0001 0100 1010
   (given [_ setup-registers]
-    "1 = 4294967296 + 1 (A = B + C)"
-    (identical? 1 (exec-and-fetch-register 0x300001a8 6)))) ; % 0000 0001 1010 1000
+    "-2147483648 = 2147483647 + 1 (A = B + C)"
+    (= -2147483648 (exec-and-fetch-register 0x300001a8 6)))) ; % 0000 0001 1010 1000
 
 (spec test-exec-operator-4
   (given [_ setup-registers]
@@ -152,8 +152,8 @@
     "9 = 3 * 3 (A = B * C)"
     (= 9 (exec-and-fetch-register 0x40000092 2))) ; % 0000 0000 1001 0010
   (given [_ setup-registers]
-    "4294967256 = 4294967276 * 2 (A = B + C)"
-    (= 4294967256 (exec-and-fetch-register 0x400000f1 3)))) ; % 0000 0000 1111 0001
+    "-2 = 2147483647 * 2 (A = B * C)"
+    (= -2 (exec-and-fetch-register 0x400000e9 3)))) ; % 0000 0000 1110 1001
 
 (spec test-exec-operator-5
   (given [_ setup-registers]

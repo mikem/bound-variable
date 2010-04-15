@@ -52,9 +52,13 @@
         rav (get-register-value :a instruction)
         rbv (get-register-value :b instruction)
         rcv (get-register-value :c instruction)]
-    (println (format "Executing 0x%1$08x, Ra: %2$d -> %3$10d [0x%3$08x] Rb: %4$d -> %5$10d [0x%5$08x] Rc: %6$d -> %7$10d [0x%7$08x]"
-                     (get-array-value 0 @*pc*) ra rav rb rbv rc rcv))
-    (println @*registers*)))
+    (println (str "Executing " (decompile-instruction instruction)))
+    (println (format "Ra: %1$d -> %2$10d [0x%2$08x] Rb: %3$d -> %4$10d [0x%4$08x] Rc: %5$d -> %6$10d [0x%6$08x]"
+                     ra rav rb rbv rc rcv))
+    (println (str @*registers*))
+    (doseq [arr-key (keys @*arrays*)]
+      (println "array" arr-key "length" (count (@*arrays* arr-key))))
+    (println (str "PC: " @*pc* "\n"))))
 
 (defmulti execute-instruction get-opcode)
 
@@ -106,8 +110,8 @@
 ; Operator 6: A = ~(B & C)
 (defmethod execute-instruction 0x6 [instruction]
   (let [ra (get-register :a instruction)
-        rbv (get-register-value :b instruction)
-        rcv (get-register-value :c instruction)
+        rbv (convert-to-int (get-register-value :b instruction))
+        rcv (convert-to-int (get-register-value :c instruction))
         result (bit-not (bit-and rbv rcv))]
     (set-register-value ra result)))
 
@@ -180,8 +184,10 @@
     (recur)))
 
 (defn print-assembly []
-  (doseq [instruction (@*arrays* 0)]
-    (println (decompile-instruction instruction))))
+  (let [pc (atom 0)]
+    (doseq [instruction (@*arrays* 0)]
+      (println (format "%6d %s" @pc (decompile-instruction instruction)))
+      (swap! pc inc))))
 
 (defn -main [& args]
   (with-command-line args

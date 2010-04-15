@@ -168,7 +168,12 @@
 (spec test-exec-operator-6
   (given [_ setup-registers]
     "A = ~(B & C)"
-    (= -1 (exec-and-fetch-register 0x60000188 6)))) ; % 0000 0001 1000 1000
+    (= -1 (exec-and-fetch-register 0x60000188 6))) ; % 0000 0001 1000 1000
+  (is
+    (do (set-register-value 1 0xd2000014)
+        (set-register-value 3 0x01ffffff)
+        (= java.lang.Integer
+           (type (exec-and-fetch-register 0x600000cb 3)))))) ; % 0000 0000 1100 1011 from real code
 
 (spec test-exec-operator-7
   "Operator 7 is the HALT instruction; call (abort)"

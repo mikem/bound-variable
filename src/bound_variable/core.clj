@@ -147,7 +147,7 @@
   (let [ra (bit-and
              (bit-shift-right instruction *load-register-offset*)
              *register-mask*)
-        value (bit-and instruction *load-value-mask*)]
+        value (bit-and (convert-to-int instruction) *load-value-mask*)]
     (set-register-value ra value)))
 
 (defn get-int-from-byte-quad [[b0 b1 b2 b3]]
@@ -175,7 +175,6 @@
 
 (defn run []
   (let [instruction (get-array-value 0 @*pc*)]
-    ;(print-instruction-info instruction)
     (execute-instruction instruction)
     (swap! *pc* inc)
     (recur)))

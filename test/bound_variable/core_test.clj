@@ -239,7 +239,10 @@
     (= 6 (exec-and-fetch-register 0xde000006 7))) ; % 1101 1110 ...
   (given [_ setup-registers]
     "A <- 33554431"
-    (= 33554431 (exec-and-fetch-register 0xdfffffff 7)))) ; % 1101 1111 ...
+    (= 33554431 (exec-and-fetch-register 0xdfffffff 7))) ; % 1101 1111 ...
+  (is
+    (= java.lang.Integer
+       (type (exec-and-fetch-register 0xdc000000 6))))) ; % 1101 1100 ... This one's from real code
 
 (spec test-get-int-vector-from-byte-array
   (is

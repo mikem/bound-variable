@@ -22,10 +22,7 @@
   (dosync (alter *arrays* assoc array-idx src-array)))
 
 (defn allocate-array [size]
-  (let [array-idx (first
-                    (filter
-                      #(not (contains? @*arrays* %))
-                      (take java.lang.Integer/MAX_VALUE (iterate inc 1))))]
+  (let [array-idx (first (remove @*arrays* (take java.lang.Integer/MAX_VALUE (iterate inc 1))))]
     (set-array array-idx (vec (replicate size 0)))
     array-idx))
 

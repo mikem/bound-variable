@@ -21,8 +21,13 @@
 (defn set-array [array-idx src-array]
   (dosync (alter *arrays* assoc array-idx src-array)))
 
-(defn allocate-array [array-idx size]
-  (set-array array-idx (vec (replicate size 0))))
+(defn allocate-array [size]
+  (let [array-idx (first
+                    (filter
+                      #(not (contains? @*arrays* %))
+                      (take java.lang.Integer/MAX_VALUE (iterate inc 1))))]
+    (set-array array-idx (vec (replicate size 0)))
+    array-idx))
 
 (defn abandon-array [array-idx]
   (dosync (alter *arrays* dissoc array-idx)))
@@ -34,7 +39,8 @@
   (dosync (alter *arrays* assoc array-idx (assoc (@*arrays* array-idx) index value))))
 
 (defn print-char [c]
-  (print (char c)))
+  (print (char c))
+  (flush))
 
 (defn read-char []
   (.read *in*))
@@ -121,9 +127,9 @@
 
 ; Operator 8: array allocation
 (defmethod execute-instruction 0x8 [instruction]
-  (let [array (get-register-value :b instruction)
-        size (get-register-value :c instruction)]
-    (allocate-array array size)))
+  (let [size (get-register-value :c instruction)
+        rb (get-register :b instruction)]
+    (set-register-value rb (allocate-array size))))
 
 ; Operator 9: array abandonment
 (defmethod execute-instruction 0x9 [instruction]

@@ -187,16 +187,18 @@
 (spec test-exec-operator-8
   (given [_ setup-registers
           _ setup-arrays]
-    "allocate array 4 of size 3"
-    (= [0 0 0]
-       (do (execute-instruction 0x80000022) ; % 0000 0000 0010 0010
-           (@*arrays* 4))))
+    "allocate array of size 3"
+    (do (execute-instruction 0x80000022) ; % 0000 0000 0010 0010
+      (and
+        (= [0 0 0] (@*arrays* 2))
+        (= 2 (@*registers* 4)))))
   (given [_ setup-registers
           _ setup-arrays]
-    "allocate array 3 of size 4"
-    (= [0 0 0 0]
-       (do (execute-instruction 0x80000014) ; % 0000 0000 0001 0100
-           (@*arrays* 3)))))
+    "allocate array of size 4"
+    (do (execute-instruction 0x80000014) ; % 0000 0000 0001 0100
+      (and
+        (= [0 0 0 0] (@*arrays* 2))
+        (= 2 (@*registers* 2))))))
 
 ; TODO: test allocating an array that already exists
 

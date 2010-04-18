@@ -160,6 +160,10 @@
     (bit-or (bit-shift-left (bit-and 0xff b1) 16))
     (bit-or (bit-shift-left (bit-and 0xff b0) 24))))
 
+; Unknown operator, abort
+(defmethod execute-instruction :default [instruction]
+  (abort))
+
 (defn get-int-vector-from-byte-array [arr]
   (loop [partitioned-arr (partition 4 (map convert-to-byte arr))
          int-vec []]

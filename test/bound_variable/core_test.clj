@@ -249,6 +249,15 @@
     (= java.lang.Integer
        (type (exec-and-fetch-register 0xdc000000 6))))) ; % 1101 1100 ... This one's from real code
 
+(spec test-exec-unknown-operator
+  "Unknown operator, abort the program"
+  (is
+    (= true
+       (let [called (atom false)]
+         (binding [bound-variable.core/abort (fn [] (reset! called true))]
+           (execute-instruction 0xf0000000))
+         @called))))
+
 (spec test-get-int-vector-from-byte-array
   (is
     (= [0x01234567 0x12345678 0x23456789 0x3456789a 0x456789ab

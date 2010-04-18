@@ -177,11 +177,15 @@
        (get-int-vector-from-byte-array)
        (set-array 0)))
 
-(defn run []
+(defn run
+  ([] (run false))
+  ([verbose?]
   (let [instruction (get-array-value 0 @*pc*)]
+    (when verbose?
+      (print-instruction-info instruction))
     (execute-instruction instruction)
     (swap! *pc* inc)
-    (recur)))
+    (recur verbose?))))
 
 (defn print-assembly []
   (let [pc (atom 0)]
@@ -193,8 +197,9 @@
   (with-command-line args
     "Run Universal Machine"
     [[input-filename i "program scroll (input file)"]
-     [decompile? d "prints assembly instead of executing program"]]
+     [decompile? d "prints assembly instead of executing program"]
+     [verbose? v "dump info for each instruction"]]
     (initialize input-filename)
     (if decompile?
       (print-assembly)
-      (run))))
+      (run verbose?))))

@@ -185,14 +185,17 @@
        (set-array 0)))
 
 (defn run
-  ([] (run false))
-  ([verbose?]
-  (let [instruction (get-array-value 0 @*pc*)]
-    (when verbose?
-      (print-instruction-info instruction))
-    (execute-instruction instruction)
-    (swap! *pc* inc)
-    (recur verbose?))))
+  ([] (run nil false))
+  ([num-cycles verbose?]
+   (when (or (nil? num-cycles) (> num-cycles 0))
+     (let [instruction (get-array-value 0 @*pc*)]
+       (when verbose?
+         (print-instruction-info instruction))
+       (execute-instruction instruction)
+       (swap! *pc* inc)
+       (recur
+         (if num-cycles (dec num-cycles) num-cycles)
+         verbose?)))))
 
 (defn print-assembly []
   (let [pc (atom 0)]
@@ -204,9 +207,11 @@
   (with-command-line args
     "Run Universal Machine"
     [[input-filename i "program scroll (input file)"]
+     [cycles c "number of cycles to execute, then exit"]
      [decompile? d "prints assembly instead of executing program"]
      [verbose? v "dump info for each instruction"]]
-    (initialize input-filename)
-    (if decompile?
-      (print-assembly)
-      (run verbose?))))
+    (let [num-cycles (when cycles (Integer/parseInt cycles))]
+      (initialize input-filename)
+      (if decompile?
+        (print-assembly)
+        (run num-cycles verbose?)))))

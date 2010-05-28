@@ -1,15 +1,41 @@
 # bound-variable
 
-FIXME: write description
+This project is my attempt at solving the Ninth annual ICFP Programming Contest:
+
+  http://www.boundvariable.org/task.shtml
+
+It's an implementation of a virtual machine. I wrote it in Clojure mainly as a
+means to explore the language. It's currently very slow. Very, very slow. But
+as far as I can tell, it works, and takes a long time crunching away at the
+sandmark. Did I mention it's slow? :P
+
+This is currently very much a work in progress.
 
 ## Usage
 
-FIXME: write
+1. Grab the dependencies with `lein deps`. There is a dependency on Stuart
+Sierra's lazytest framework:
 
-## Installation
+  http://github.com/stuartsierra/lazytest
 
-FIXME: write
+The code works with lazytest commit fdc45ff880111797a16cb3a3ef0633eb5d404aac.
+You might need to compile this manually and place it in the libs/ folder
+yourself.
+
+2. Compile the code with `lein compile`.
+
+3. The application is run by executing the script bound-variable.sh.
+
+4. Run `./bound-variable.sh -h` for usage information. Also read the task
+description for details on preparing "program scrolls."
 
 ## License
 
-FIXME: write
+MIT license:
+
+  http://www.opensource.org/licenses/mit-license.php
+  http://en.wikipedia.org/wiki/MIT_License
+
+I reserve the right to change the license in the future.
+
+Copyright Mike Mazur 2010
